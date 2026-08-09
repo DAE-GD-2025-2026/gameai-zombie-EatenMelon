@@ -26,6 +26,8 @@ public class DewulfIgnaceZombieRuntime : ModuleRules
 			new string[]
 			{
 				"Core",
+				"AIModule",
+				"GameAI_Zombie",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -38,7 +40,6 @@ public class DewulfIgnaceZombieRuntime : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"AIModule",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
