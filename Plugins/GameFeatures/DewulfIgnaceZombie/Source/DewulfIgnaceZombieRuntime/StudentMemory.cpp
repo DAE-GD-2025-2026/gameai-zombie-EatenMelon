@@ -24,7 +24,6 @@ void UStudentMemory::TickComponent(float DeltaTime, enum ELevelTick TickType,
 void UStudentMemory::Memorize(ABaseZombie* Zombie)
 {
 	const auto OwnerPos = GetOwner()->GetActorLocation();
-	Zombie->OnDestroyed.AddDynamic(this, &UStudentMemory::Forget);
 	
 	erase_if
 	(
@@ -34,38 +33,36 @@ void UStudentMemory::Memorize(ABaseZombie* Zombie)
 			auto ZombiePos = Z->GetActorLocation();
 			auto Dist2 = FVector::DistSquared(OwnerPos, ZombiePos);
 			
-			return Dist2 <= MemoryRange * MemoryRange;
+			return Dist2 > MemoryRange * MemoryRange;
 		}
 	);
 	
 	if (std::ranges::find(Zombies, Zombie) != Zombies.end()) return;
+	Zombie->OnDestroyed.AddUniqueDynamic(this, &UStudentMemory::Forget);
 	
 	Zombies.emplace_back(Zombie);
 }
 
 void UStudentMemory::Memorize(APurgeZone* PurgeZone)
 {
-	PurgeZone->OnDestroyed.AddDynamic(this, &UStudentMemory::Forget);
-	
 	if (std::ranges::find(PurgeZones, PurgeZone) != PurgeZones.end()) return;
+	PurgeZone->OnDestroyed.AddUniqueDynamic(this, &UStudentMemory::Forget);
 	
 	PurgeZones.emplace_back(PurgeZone);
 }
 
 void UStudentMemory::Memorize(AHouse* House)
 {
-	House->OnDestroyed.AddDynamic(this, &UStudentMemory::Forget);
-	
 	if (std::ranges::find(Houses, House) != Houses.end()) return;
+	House->OnDestroyed.AddUniqueDynamic(this, &UStudentMemory::Forget);
 	
 	Houses.emplace_back(House);
 }
 
 void UStudentMemory::Memorize(ABaseItem* Item)
 {
-	Item->OnDestroyed.AddDynamic(this, &UStudentMemory::Forget);
-	
 	if (std::ranges::find(Items, Item) != Items.end()) return;
+	Item->OnDestroyed.AddUniqueDynamic(this, &UStudentMemory::Forget);
 	
 	Items.emplace_back(Item);
 }
@@ -90,9 +87,24 @@ void UStudentMemory::Forget(const ABaseItem* Item)
 	std::erase(Items, Item);
 }
 
-const TArray<FVector>& UStudentMemory::GetPathToClosestHouse() const
+const std::vector<ABaseZombie*>& UStudentMemory::GetZombies() const
 {
-	return PathToClosestHouse;
+	return Zombies;
+}
+
+const std::vector<APurgeZone*>& UStudentMemory::GetPurgeZones() const
+{
+	return PurgeZones;
+}
+
+const std::vector<AHouse*>& UStudentMemory::GetHouses() const
+{
+	return Houses;
+}
+
+const std::vector<ABaseItem*>& UStudentMemory::GetItems() const
+{
+	return Items;
 }
 
 void UStudentMemory::Forget(AActor* Actor)

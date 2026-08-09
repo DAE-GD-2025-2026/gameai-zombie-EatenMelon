@@ -35,20 +35,24 @@ public:
 	void Forget(const AHouse* House);
 	void Forget(const ABaseItem* Item);
 	
-	const TArray<FVector>& GetPathToClosestHouse() const;
+	const std::vector<ABaseZombie*>& GetZombies() const;
+	const std::vector<APurgeZone*>& GetPurgeZones() const;
+	const std::vector<AHouse*>& GetHouses() const;
+	const std::vector<ABaseItem*>& GetItems() const;
 	
-private:
 	UFUNCTION()
 	void Forget(AActor* Actor);
+	
+private:
 	void UpdatePaths();
 	
 	float TimeUntilPathUpdate{ 0.f };
 	float MemoryRange{ 100.f };
 	
-	std::vector<const ABaseZombie*> Zombies{};
-	std::vector<const APurgeZone*> PurgeZones{};
-	std::vector<const AHouse*> Houses{};
-	std::vector<const ABaseItem*> Items{};
+	std::vector<ABaseZombie*> Zombies{};
+	std::vector<APurgeZone*> PurgeZones{};
+	std::vector<AHouse*> Houses{};
+	std::vector<ABaseItem*> Items{};
 	
 	TArray<FVector> PathToClosestHouse{};
 };
