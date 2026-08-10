@@ -2,13 +2,24 @@
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 
 UBTTask_Navigate::UBTTask_Navigate()
 {
 	NodeName = TEXT("Navigate");
 	bNotifyTick = true;
+	bCreateNodeInstance = true;
+}
+
+void UBTTask_Navigate::InitializeFromAsset(UBehaviorTree& Asset)
+{
+	Super::InitializeFromAsset(Asset);
 	
-	
+	if (const UBlackboardData* BlackboardAsset = GetBlackboardAsset())
+	{
+		TargetKey.ResolveSelectedKey(*BlackboardAsset);
+	}
 }
 
 EBTNodeResult::Type UBTTask_Navigate::ExecuteTask
@@ -17,10 +28,44 @@ EBTNodeResult::Type UBTTask_Navigate::ExecuteTask
 	uint8* NodeMemory
 )
 {
-	const UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
-	TargetActor = Cast<AActor>(BlackBoard->GetValueAsObject(TargetKey.SelectedKeyName));
+	const UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
 	
-	if (TargetActor == nullptr)
+	if (Blackboard == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+
+	const UBlackboardData* BlackboardAsset = Blackboard->GetBlackboardAsset();
+
+	if (BlackboardAsset == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	const FBlackboardEntry* Entry = BlackboardAsset->GetKey(TargetKey.GetSelectedKeyID());
+	
+	if (Entry == nullptr || Entry->KeyType == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	if (Entry->KeyType.IsA<UBlackboardKeyType_Object>())
+	{
+		TargetActor = 
+			Cast<AActor>(Blackboard->GetValueAsObject(TargetKey.SelectedKeyName));
+		
+		if (TargetActor == nullptr)
+		{
+			return EBTNodeResult::Failed;
+		}
+		
+		TargetLocation = TargetActor->GetActorLocation();
+	}
+	else if (Entry->KeyType.IsA<UBlackboardKeyType_Vector>())
+	{
+		TargetLocation = Blackboard->GetValueAsVector(TargetKey.SelectedKeyName);
+	}
+	else
 	{
 		return EBTNodeResult::Failed;
 	}
@@ -81,7 +126,7 @@ void UBTTask_Navigate::UpdatePath(float DeltaSeconds)
 	if (SurvivorPawn == nullptr) return;
 	
 	Path.Reset();
-	Path = SurvivorPawn->CalculatePath(TargetActor->GetActorLocation());
+	Path = SurvivorPawn->CalculatePath(TargetLocation);
 	
 	constexpr float PathUpdateInterval = 1.f;
 	TimeUntilPathUpdate = PathUpdateInterval;
@@ -90,7 +135,7 @@ void UBTTask_Navigate::UpdatePath(float DeltaSeconds)
 
 void UBTTask_Navigate::CalculateSteering(UBehaviorTreeComponent& OwnerComp, float DeltaSeconds)
 {
-	constexpr float MinDist{ 1.f };
+	constexpr float MinDist{ 10.f };
 	
 	const AAIController* AIOwner = OwnerComp.GetAIOwner();		
 	APawn* Pawn = AIOwner->GetPawn();
@@ -98,12 +143,14 @@ void UBTTask_Navigate::CalculateSteering(UBehaviorTreeComponent& OwnerComp, floa
 	FVector PawnLocation = Pawn->GetActorLocation();
 	PawnLocation.Z = 0.f;
 	
-	FVector Destination = TargetActor->GetActorLocation();
+	FVector Destination = TargetLocation;
 	Destination.Z = 0.f;
 	
 	if (FVector::DistSquared(PawnLocation, Destination) <= MinDist * MinDist)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		if (TargetActor == nullptr) return;
+		
 		StudentMemory->Forget(TargetActor);
 		return;
 	}
@@ -117,8 +164,9 @@ void UBTTask_Navigate::CalculateSteering(UBehaviorTreeComponent& OwnerComp, floa
 		FVector ZombieLocation = Zombie->GetActorLocation();
 		ZombieLocation.Z = 0.f;
 		
-		const float Distance = FVector::Dist(ZombieLocation, PawnLocation);
-		const float Weight = 1.0f / FMath::Max(Distance, MinDistanceToZombies);
+		float Distance = FVector::Dist(ZombieLocation, PawnLocation);
+		const float Weight =
+			1.f - FMath::Clamp(Distance / MinDistanceToZombies, 0.f, 1.f);
 		
 		const FVector FleeZombie = ( PawnLocation - ZombieLocation ).GetSafeNormal();
 		FleeZombies += FleeZombie * Weight;
@@ -140,8 +188,9 @@ void UBTTask_Navigate::CalculateSteering(UBehaviorTreeComponent& OwnerComp, floa
 		FVector ZoneCenter = Zone->GetActorLocation();
 		ZoneCenter.Z = 0.f;
 		
-		const float Distance = FVector::Dist(ZoneCenter, PawnLocation);
-		const float Weight = 1.0f / FMath::Max(Distance, MinDistanceToPurgeZones);
+		float Distance = FVector::Dist(ZoneCenter, PawnLocation);
+		const float Weight =
+			1.f - FMath::Clamp(Distance / MinDistanceToPurgeZones, 0.f, 1.f);
 		
 		const FVector FleeZone = ( PawnLocation - ZoneCenter ).GetSafeNormal();
 		FleePurgeZones += Weight * FleeZone;
@@ -185,11 +234,11 @@ void UBTTask_Navigate::CalculateSteering(UBehaviorTreeComponent& OwnerComp, floa
 	Movement += FleePurgeZones * AvoidPurgeZonesWeight;
 	Movement += FleeZombies * AvoidZombiesWeight;
 	
-	const float TotalWeight = SearchTargetWeight + AvoidPurgeZonesWeight + AvoidZombiesWeight;
-	if (TotalWeight > 0.f)
+	Movement = Movement.GetSafeNormal();
+	
+	if (Movement.IsNearlyZero())
 	{
-		Movement /= TotalWeight;
-		Movement = Movement.GetSafeNormal();
+		Movement = SeekTarget;
 	}
 	
 	Pawn->AddMovementInput(Movement);

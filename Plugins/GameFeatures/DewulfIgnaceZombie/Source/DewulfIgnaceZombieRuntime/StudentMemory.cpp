@@ -30,8 +30,8 @@ void UStudentMemory::Memorize(ABaseZombie* Zombie)
 		Zombies, 
 		[&](const ABaseZombie* Z)
 		{
-			auto ZombiePos = Z->GetActorLocation();
-			auto Dist2 = FVector::DistSquared(OwnerPos, ZombiePos);
+			const auto ZombiePos = Z->GetActorLocation();
+			const auto Dist2 = FVector::DistSquared(OwnerPos, ZombiePos);
 			
 			return Dist2 > MemoryRange * MemoryRange;
 		}
@@ -53,6 +53,7 @@ void UStudentMemory::Memorize(APurgeZone* PurgeZone)
 
 void UStudentMemory::Memorize(AHouse* House)
 {
+	if (std::ranges::find(ForgottenHouses, House) != ForgottenHouses.end()) return;
 	if (std::ranges::find(Houses, House) != Houses.end()) return;
 	House->OnDestroyed.AddUniqueDynamic(this, &UStudentMemory::Forget);
 	
@@ -67,22 +68,26 @@ void UStudentMemory::Memorize(ABaseItem* Item)
 	Items.emplace_back(Item);
 }
 
-void UStudentMemory::Forget(const ABaseZombie* Zombie)
+void UStudentMemory::Forget(ABaseZombie* Zombie)
 {
 	std::erase(Zombies, Zombie);
 }
 
-void UStudentMemory::Forget(const APurgeZone* PurgeZone)
+void UStudentMemory::Forget(APurgeZone* PurgeZone)
 {
 	std::erase(PurgeZones, PurgeZone);
 }
 
-void UStudentMemory::Forget(const AHouse* House)
+void UStudentMemory::Forget(AHouse* House)
 {
 	std::erase(Houses, House);
+	
+	if (std::ranges::find(ForgottenHouses, House) != ForgottenHouses.end()) return;
+	
+	ForgottenHouses.push_back(House);
 }
 
-void UStudentMemory::Forget(const ABaseItem* Item)
+void UStudentMemory::Forget(ABaseItem* Item)
 {
 	std::erase(Items, Item);
 }

@@ -12,6 +12,8 @@ class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_Navigate : public UBTTaskNode
 public:
 	UBTTask_Navigate();
 	
+	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;
+	
 	virtual EBTNodeResult::Type ExecuteTask
 	(
 		UBehaviorTreeComponent& OwnerComp,
@@ -43,6 +45,7 @@ public:
 private:
 	UPROPERTY()
 	TObjectPtr<AActor> TargetActor{ nullptr };
+	FVector TargetLocation{ FVector::Zero() };
 	
 	UPROPERTY()
 	TObjectPtr<UStudentMemory> StudentMemory{ nullptr };

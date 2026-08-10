@@ -30,10 +30,10 @@ public:
 	void Memorize(AHouse* House);
 	void Memorize(ABaseItem* Item);
 	
-	void Forget(const ABaseZombie* Zombie);
-	void Forget(const APurgeZone* PurgeZone);
-	void Forget(const AHouse* House);
-	void Forget(const ABaseItem* Item);
+	void Forget(ABaseZombie* Zombie);
+	void Forget(APurgeZone* PurgeZone);
+	void Forget(AHouse* House);
+	void Forget(ABaseItem* Item);
 	
 	const std::vector<ABaseZombie*>& GetZombies() const;
 	const std::vector<APurgeZone*>& GetPurgeZones() const;
@@ -47,12 +47,13 @@ private:
 	void UpdatePaths();
 	
 	float TimeUntilPathUpdate{ 0.f };
-	float MemoryRange{ 100.f };
+	float MemoryRange{ 500.f };
 	
 	std::vector<ABaseZombie*> Zombies{};
 	std::vector<APurgeZone*> PurgeZones{};
 	std::vector<AHouse*> Houses{};
 	std::vector<ABaseItem*> Items{};
 	
+	std::vector<AHouse*> ForgottenHouses{};
 	TArray<FVector> PathToClosestHouse{};
 };
