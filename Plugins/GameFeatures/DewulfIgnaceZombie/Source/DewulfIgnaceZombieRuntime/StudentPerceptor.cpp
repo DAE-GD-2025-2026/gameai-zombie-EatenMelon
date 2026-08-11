@@ -4,6 +4,7 @@
 #include "StudentPerceptor.h"
 
 #include "StudentMemory.h"
+#include "Common/InventoryComponent.h"
 #include "Items/BaseItem.h"
 #include "Zombies/BaseZombie.h"
 #include "Village/House/House.h"
@@ -26,6 +27,17 @@ void UStudentPerceptor::BeginPlay()
 	
 	Memory = NewObject<UStudentMemory>(GetOwner());
 	Memory->RegisterComponent();
+	
+	if (auto Inv = GetOwner()->FindComponentByClass<UInventoryComponent>())
+	{
+		GEngine->AddOnScreenDebugMessage
+		(
+			-1,
+			10.f,
+			FColor::Green,
+			FString::Printf(TEXT("Inventory accessible"))
+		);
+	}
 }
 
 void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)

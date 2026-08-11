@@ -43,8 +43,6 @@ public:
 	float SearchTargetWeight{ 0.5f };
 	
 private:
-	UPROPERTY()
-	TObjectPtr<AActor> TargetActor{ nullptr };
 	FVector TargetLocation{ FVector::Zero() };
 	
 	UPROPERTY()

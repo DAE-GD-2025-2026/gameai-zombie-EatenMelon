@@ -51,7 +51,7 @@ EBTNodeResult::Type UBTTask_Navigate::ExecuteTask
 	
 	if (Entry->KeyType.IsA<UBlackboardKeyType_Object>())
 	{
-		TargetActor = 
+		const AActor* TargetActor = 
 			Cast<AActor>(Blackboard->GetValueAsObject(TargetKey.SelectedKeyName));
 		
 		if (TargetActor == nullptr)
@@ -149,9 +149,6 @@ void UBTTask_Navigate::CalculateSteering(UBehaviorTreeComponent& OwnerComp, floa
 	if (FVector::DistSquared(PawnLocation, Destination) <= MinDist * MinDist)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-		if (TargetActor == nullptr) return;
-		
-		StudentMemory->Forget(TargetActor);
 		return;
 	}
 	

@@ -3,7 +3,7 @@
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-UStudentMemory* UBTTask_MemoryAccess::GetStudentMemory(UBehaviorTreeComponent& OwnerComp)
+UStudentMemory* UBTTask_MemoryAccess::GetStudentMemory(const UBehaviorTreeComponent& OwnerComp)
 {
 	const AAIController* AIOwner = OwnerComp.GetAIOwner();
 		
@@ -21,9 +21,43 @@ UStudentMemory* UBTTask_MemoryAccess::GetStudentMemory(UBehaviorTreeComponent& O
 	return StudentMemory;
 }
 
+UBTTask_Forget::UBTTask_Forget()
+{
+	NodeName = TEXT("Forget");
+}
+
+EBTNodeResult::Type UBTTask_Forget::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	UStudentMemory* StudentMemory = GetStudentMemory(OwnerComp);
+	
+	if (StudentMemory == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	const UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent();
+	
+	if (BlackboardComponent == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	AActor* TargetActor = 
+		Cast<AActor>(BlackboardComponent->GetValueAsObject(Target.SelectedKeyName));
+	
+	if (TargetActor == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	StudentMemory->Forget(TargetActor);
+	
+	return EBTNodeResult::Succeeded;
+}
+
 UBTTask_GetClosestHouse::UBTTask_GetClosestHouse()
 {
-	NodeName = TEXT("GetClosestHouse");
+	NodeName = TEXT("Get Closest House");
 }
 
 EBTNodeResult::Type UBTTask_GetClosestHouse::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -63,8 +97,57 @@ EBTNodeResult::Type UBTTask_GetClosestHouse::ExecuteTask(UBehaviorTreeComponent&
 	
 	BlackBoard->SetValueAsObject
 	(
-		Output.SelectedKeyName,
+		Target.SelectedKeyName,
 		Houses.front()
+	);
+	
+	return EBTNodeResult::Succeeded;
+}
+
+UBTTask_GetClosestItem::UBTTask_GetClosestItem()
+{
+	NodeName = TEXT("Get Closest Item");
+}
+
+EBTNodeResult::Type UBTTask_GetClosestItem::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	const UStudentMemory* StudentMemory = GetStudentMemory(OwnerComp);
+	
+	if (StudentMemory == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	auto Items = StudentMemory->GetItems();
+	if (Items.empty())
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	const FVector Start = StudentMemory->GetOwner()->GetActorLocation();
+	std::ranges::sort
+	(
+		Items,
+		[&](const ABaseItem* A, const ABaseItem* B)
+		{
+			const auto ToA = FVector::DistSquared(Start, A->GetActorLocation());
+			const auto ToB = FVector::DistSquared(Start, B->GetActorLocation());
+			
+			return ToA < ToB;
+		}
+	);
+	
+	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
+	
+	if (BlackBoard == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	BlackBoard->SetValueAsObject
+	(
+		Target.SelectedKeyName,
+		Items.front()
 	);
 	
 	return EBTNodeResult::Succeeded;

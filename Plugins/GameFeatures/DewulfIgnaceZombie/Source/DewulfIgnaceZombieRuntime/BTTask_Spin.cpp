@@ -20,7 +20,7 @@ void UBTTask_Spin::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 	
 	const auto AIOwner = OwnerComp.GetAIOwner();
-	auto Pawn = AIOwner->GetPawn();
+	const auto Pawn = AIOwner->GetPawn();
 	
 	const float DeltaRotation = DeltaSeconds * SpinSpeed;
 	Rotation += DeltaRotation;

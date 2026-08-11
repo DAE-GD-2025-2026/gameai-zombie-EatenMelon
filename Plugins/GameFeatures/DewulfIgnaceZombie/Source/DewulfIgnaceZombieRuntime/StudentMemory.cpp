@@ -1,4 +1,6 @@
 ﻿#include "StudentMemory.h"
+
+#include "Common/InventoryComponent.h"
 #include "Survivor/SurvivorPawn.h"
 
 UStudentMemory::UStudentMemory()
@@ -10,15 +12,6 @@ void UStudentMemory::TickComponent(float DeltaTime, enum ELevelTick TickType,
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
-	if (TimeUntilPathUpdate <= 0.f)
-	{
-		UpdatePaths();
-	}
-	else
-	{
-		TimeUntilPathUpdate -= DeltaTime;
-	}
 }
 
 void UStudentMemory::Memorize(ABaseZombie* Zombie)
@@ -130,28 +123,4 @@ void UStudentMemory::Forget(AActor* Actor)
 	{
 		Forget(House);
 	}
-}
-
-void UStudentMemory::UpdatePaths()
-{
-	TimeUntilPathUpdate = 1.f;
-	
-	ASurvivorPawn* SurvivorPawn = Cast<ASurvivorPawn>(GetOwner());
-	
-	const auto OwnerPos = GetOwner()->GetActorLocation();
-	
-	std::ranges::sort
-	(
-		Houses,
-		[&](const AHouse* A, const AHouse* B)
-		{
-			const auto ToA = FVector::DistSquared(OwnerPos, A->GetActorLocation());
-			const auto ToB = FVector::DistSquared(OwnerPos, B->GetActorLocation());
-			
-			return ToA < ToB;
-		}
-	);
-	
-	const auto ClosestHouse = (*Houses.begin())->GetActorLocation();
-	PathToClosestHouse = SurvivorPawn->CalculatePath(ClosestHouse);
 }

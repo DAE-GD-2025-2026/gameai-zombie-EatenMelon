@@ -5,25 +5,55 @@
 #include "BTTask_MemoryAccess.generated.h"
 
 UCLASS()
-class UBTTask_MemoryAccess : public UBTTaskNode
+class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_MemoryAccess : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
 protected:
-	static UStudentMemory* GetStudentMemory(UBehaviorTreeComponent& OwnerComp);
+	static UStudentMemory* GetStudentMemory(const UBehaviorTreeComponent& OwnerComp);
 	
 public:
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
-	FBlackboardKeySelector Output;
+	FBlackboardKeySelector Target;
 };
 
 UCLASS()
-class UBTTask_GetClosestHouse : public UBTTask_MemoryAccess
+class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_Forget : public UBTTask_MemoryAccess
+{
+	GENERATED_BODY()
+	
+public:
+	UBTTask_Forget();
+	
+	virtual EBTNodeResult::Type ExecuteTask
+	(
+		UBehaviorTreeComponent& OwnerComp,
+		uint8* NodeMemory
+	) override;
+};
+
+UCLASS()
+class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_GetClosestHouse : public UBTTask_MemoryAccess
 {
 	GENERATED_BODY()
 	
 public:
 	UBTTask_GetClosestHouse();
+	
+	virtual EBTNodeResult::Type ExecuteTask
+	(
+		UBehaviorTreeComponent& OwnerComp,
+		uint8* NodeMemory
+	) override;
+};
+
+UCLASS()
+class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_GetClosestItem : public UBTTask_MemoryAccess
+{
+	GENERATED_BODY()
+	
+public:
+	UBTTask_GetClosestItem();
 	
 	virtual EBTNodeResult::Type ExecuteTask
 	(

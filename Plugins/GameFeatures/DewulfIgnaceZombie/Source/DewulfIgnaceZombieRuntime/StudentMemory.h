@@ -44,9 +44,6 @@ public:
 	void Forget(AActor* Actor);
 	
 private:
-	void UpdatePaths();
-	
-	float TimeUntilPathUpdate{ 0.f };
 	float MemoryRange{ 500.f };
 	
 	std::vector<ABaseZombie*> Zombies{};
