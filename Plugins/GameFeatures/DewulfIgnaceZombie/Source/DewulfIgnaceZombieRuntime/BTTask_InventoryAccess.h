@@ -4,6 +4,14 @@
 #include "Common/InventoryComponent.h"
 #include "BTTask_InventoryAccess.generated.h"
 
+UENUM()
+enum class EItemCategory
+{
+	Recovery UMETA(DisplayName = "Recovery"),
+	Healing UMETA(DisplayName = "Healing"),
+	Weapon UMETA(DisplayName = "Weapon"),
+};
+
 UCLASS()
 class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_InventoryAccess: public UBTTaskNode
 {
@@ -12,10 +20,6 @@ class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_InventoryAccess: public UBTTaskNode
 protected:
 	static UInventoryComponent* GetInventory(const UBehaviorTreeComponent& OwnerComp);
 	static int GetAvailableSlot(const UInventoryComponent* Inventory);
-	
-public:
-	UPROPERTY(EditAnywhere, Category = "Blackboard")
-	FBlackboardKeySelector Target;
 };
 
 UCLASS()
@@ -31,4 +35,47 @@ public:
 		UBehaviorTreeComponent& OwnerComp,
 		uint8* NodeMemory
 	) override;
+	
+	UPROPERTY(EditAnywhere, Category = "Input")
+	FBlackboardKeySelector Target;
+};
+
+UCLASS()
+class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_SelectItem : public UBTTask_InventoryAccess
+{
+	GENERATED_BODY()
+	
+public:
+	UBTTask_SelectItem();
+	
+	virtual EBTNodeResult::Type ExecuteTask
+	(
+		UBehaviorTreeComponent& OwnerComp,
+		uint8* NodeMemory
+	) override;
+	
+	UPROPERTY(EditAnywhere, Category = "Output")
+	FBlackboardKeySelector ItemSlot;
+	
+	UPROPERTY(EditAnywhere, Category = "Input")
+	EItemCategory ItemCategory;
+	
+private:
+	static bool IsOfCategory(const ABaseItem* Item, EItemCategory Category);
+	
+};
+
+UCLASS()
+class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_UseSelectedItem : public UBTTask_InventoryAccess
+{
+	GENERATED_BODY()
+public:
+	virtual EBTNodeResult::Type ExecuteTask
+	(
+		UBehaviorTreeComponent& OwnerComp,
+		uint8* NodeMemory
+	) override;
+		
+	UPROPERTY(EditAnywhere, Category = "Input")
+    FBlackboardKeySelector ItemSlot;
 };

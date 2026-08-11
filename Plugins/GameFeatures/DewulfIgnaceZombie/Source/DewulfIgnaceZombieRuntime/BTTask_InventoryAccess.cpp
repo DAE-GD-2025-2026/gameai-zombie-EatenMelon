@@ -2,6 +2,9 @@
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Items/Food.h"
+#include "Items/Medkit.h"
+#include "Items/Pistol.h"
 
 UInventoryComponent* UBTTask_InventoryAccess::GetInventory(const UBehaviorTreeComponent& OwnerComp)
 {
@@ -96,4 +99,111 @@ EBTNodeResult::Type UBTTask_GrabItem::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	}
 	
 	return Super::ExecuteTask(OwnerComp, NodeMemory);
+}
+
+UBTTask_SelectItem::UBTTask_SelectItem()
+{
+	NodeName = TEXT("Select Item");
+}
+
+EBTNodeResult::Type UBTTask_SelectItem::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	const UInventoryComponent* InventoryComp = GetInventory(OwnerComp);
+	
+	if (InventoryComp == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	TArray<ABaseItem*> Inventory = InventoryComp->GetInventory();
+	
+	if (Inventory.IsEmpty())
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent();
+	
+	if (BlackboardComponent == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	int Slot{};
+	for (Slot = 0; Slot < Inventory.Num(); ++Slot)
+	{
+		if (IsOfCategory(Inventory[Slot], ItemCategory))
+		{
+			BlackboardComponent->SetValueAsInt(ItemSlot.SelectedKeyName, Slot);
+			
+			return EBTNodeResult::Succeeded;
+		}
+	}
+	
+	return EBTNodeResult::Failed;
+}
+
+bool UBTTask_SelectItem::IsOfCategory(const ABaseItem* Item, EItemCategory Category)
+{
+	if (Item == nullptr) return false;
+	
+	switch (Category)
+	{
+	case EItemCategory::Recovery:
+		return Item->IsA<AFood>();
+		
+	case EItemCategory::Healing:
+		return Item->IsA<AMedkit>();
+		
+	case EItemCategory::Weapon:
+		return Item->IsA<AWeapon>();
+	}
+	
+	return false;
+}
+
+EBTNodeResult::Type UBTTask_UseSelectedItem::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	const UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent();
+	
+	if (BlackboardComponent == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	const int Slot = BlackboardComponent->GetValueAsInt(ItemSlot.SelectedKeyName);
+	
+	UInventoryComponent* InventoryComponent = GetInventory(OwnerComp);
+	
+	if (InventoryComponent == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	TArray<ABaseItem*> Inventory = InventoryComponent->GetInventory();
+	
+	if (Slot >= Inventory.Num())
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	if (Inventory[Slot] == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	if (Inventory[Slot]->GetValue() <= 0)
+	{
+		InventoryComponent->RemoveItem(Slot);
+		return EBTNodeResult::Failed;
+	}
+	
+	InventoryComponent->UseItem(Slot);
+	
+	if (Inventory[Slot]->GetValue() <= 0)
+	{
+		InventoryComponent->RemoveItem(Slot);
+	}
+	
+	return EBTNodeResult::Succeeded;
 }
