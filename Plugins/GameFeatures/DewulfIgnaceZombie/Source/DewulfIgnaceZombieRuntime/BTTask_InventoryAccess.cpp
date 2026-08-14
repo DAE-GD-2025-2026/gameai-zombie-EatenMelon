@@ -98,6 +98,11 @@ EBTNodeResult::Type UBTTask_GrabItem::ExecuteTask(UBehaviorTreeComponent& OwnerC
 		return EBTNodeResult::Failed;
 	}
 	
+	if (Item->GetValue() <= 0)
+	{
+		Inventory->RemoveItem(Slot);
+	}
+	
 	return Super::ExecuteTask(OwnerComp, NodeMemory);
 }
 
@@ -160,6 +165,11 @@ bool UBTTask_SelectItem::IsOfCategory(const ABaseItem* Item, EItemCategory Categ
 	}
 	
 	return false;
+}
+
+UBTTask_UseSelectedItem::UBTTask_UseSelectedItem()
+{
+	NodeName = TEXT("Use Selected Item");
 }
 
 EBTNodeResult::Type UBTTask_UseSelectedItem::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

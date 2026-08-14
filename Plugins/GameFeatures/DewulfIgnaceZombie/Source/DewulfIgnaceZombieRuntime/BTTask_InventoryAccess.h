@@ -70,6 +70,8 @@ class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_UseSelectedItem : public UBTTask_Inv
 {
 	GENERATED_BODY()
 public:
+	UBTTask_UseSelectedItem();
+	
 	virtual EBTNodeResult::Type ExecuteTask
 	(
 		UBehaviorTreeComponent& OwnerComp,
