@@ -4,12 +4,12 @@
 #include "BTTask_PlayerInfoAccess.generated.h"
 
 UCLASS()
-class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_GetHealthPercent : public UBTTaskNode
+class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_GetHealthPercentage : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
 public:
-	UBTTask_GetHealthPercent();
+	UBTTask_GetHealthPercentage();
 	
 	virtual EBTNodeResult::Type ExecuteTask
 	(
@@ -22,12 +22,12 @@ public:
 };
 
 UCLASS()
-class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_GetStaminaPercent : public UBTTaskNode
+class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_GetStaminaPercentage : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
 public:
-	UBTTask_GetStaminaPercent();
+	UBTTask_GetStaminaPercentage();
 	
 	virtual EBTNodeResult::Type ExecuteTask
 	(

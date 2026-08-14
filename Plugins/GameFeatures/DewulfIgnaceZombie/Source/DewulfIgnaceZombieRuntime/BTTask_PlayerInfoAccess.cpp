@@ -4,12 +4,12 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Common/StaminaComponent.h"
 
-UBTTask_GetHealthPercent::UBTTask_GetHealthPercent()
+UBTTask_GetHealthPercentage::UBTTask_GetHealthPercentage()
 {
 	NodeName = TEXT("Get Health Percent");
 }
 
-EBTNodeResult::Type UBTTask_GetHealthPercent::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_GetHealthPercentage::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	const AAIController* AIOwner = OwnerComp.GetAIOwner();
 	
@@ -46,12 +46,12 @@ EBTNodeResult::Type UBTTask_GetHealthPercent::ExecuteTask(UBehaviorTreeComponent
 	return EBTNodeResult::Succeeded;
 }
 
-UBTTask_GetStaminaPercent::UBTTask_GetStaminaPercent()
+UBTTask_GetStaminaPercentage::UBTTask_GetStaminaPercentage()
 {
 	NodeName = TEXT("Get Stamina Percent");
 }
 
-EBTNodeResult::Type UBTTask_GetStaminaPercent::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_GetStaminaPercentage::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	const AAIController* AIOwner = OwnerComp.GetAIOwner();
 	
