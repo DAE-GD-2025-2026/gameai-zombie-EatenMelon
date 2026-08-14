@@ -103,7 +103,7 @@ EBTNodeResult::Type UBTTask_GrabItem::ExecuteTask(UBehaviorTreeComponent& OwnerC
 		Inventory->RemoveItem(Slot);
 	}
 	
-	return Super::ExecuteTask(OwnerComp, NodeMemory);
+	return EBTNodeResult::Succeeded;
 }
 
 UBTTask_SelectItem::UBTTask_SelectItem()

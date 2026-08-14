@@ -18,7 +18,7 @@ public:
 };
 
 UCLASS()
-class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_Forget : public UBTTask_MemoryAccess
+class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_Forget final : public UBTTask_MemoryAccess
 {
 	GENERATED_BODY()
 	
@@ -33,7 +33,7 @@ public:
 };
 
 UCLASS()
-class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_GetClosestHouse : public UBTTask_MemoryAccess
+class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_GetClosestHouse final : public UBTTask_MemoryAccess
 {
 	GENERATED_BODY()
 	
@@ -48,7 +48,7 @@ public:
 };
 
 UCLASS()
-class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_GetClosestItem : public UBTTask_MemoryAccess
+class DEWULFIGNACEZOMBIERUNTIME_API UBTTask_GetClosestItem final : public UBTTask_MemoryAccess
 {
 	GENERATED_BODY()
 	
@@ -60,4 +60,20 @@ public:
 		UBehaviorTreeComponent& OwnerComp,
 		uint8* NodeMemory
 	) override;
+};
+
+UCLASS()
+class UBTTask_GetClosestZombie final : public UBTTask_MemoryAccess
+{
+	GENERATED_BODY()
+
+public:
+	UBTTask_GetClosestZombie();
+	
+	virtual EBTNodeResult::Type ExecuteTask
+	(
+		UBehaviorTreeComponent& OwnerComp,
+		uint8* NodeMemory
+	) override;
+	
 };

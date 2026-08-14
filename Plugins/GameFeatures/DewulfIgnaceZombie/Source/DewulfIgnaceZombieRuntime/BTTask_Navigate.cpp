@@ -113,8 +113,6 @@ void UBTTask_Navigate::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 	
 	UpdatePath(DeltaSeconds);
 	CalculateSteering(OwnerComp, DeltaSeconds);
-	
-	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 }
 
 void UBTTask_Navigate::UpdatePath(float DeltaSeconds)
@@ -135,7 +133,7 @@ void UBTTask_Navigate::UpdatePath(float DeltaSeconds)
 
 void UBTTask_Navigate::CalculateSteering(UBehaviorTreeComponent& OwnerComp, float DeltaSeconds)
 {
-	constexpr float MinDist{ 10.f };
+	constexpr float MinDist{ 50.f };
 	
 	const AAIController* AIOwner = OwnerComp.GetAIOwner();		
 	APawn* Pawn = AIOwner->GetPawn();
@@ -208,6 +206,12 @@ void UBTTask_Navigate::CalculateSteering(UBehaviorTreeComponent& OwnerComp, floa
 	}
 	
 	FVector NodeLocation = Path[CurrentTargetNodeIndex];
+	
+	if (Path.Num() <= 1)
+	{
+		NodeLocation = TargetLocation;
+	}
+	
 	NodeLocation.Z = 0.f;
 	
 	if (FVector::DistSquared(PawnLocation, NodeLocation) <= MinDist * MinDist)

@@ -152,3 +152,54 @@ EBTNodeResult::Type UBTTask_GetClosestItem::ExecuteTask(UBehaviorTreeComponent& 
 	
 	return EBTNodeResult::Succeeded;
 }
+
+UBTTask_GetClosestZombie::UBTTask_GetClosestZombie()
+{
+	NodeName = TEXT("Get Closest Zombie");
+}
+
+EBTNodeResult::Type UBTTask_GetClosestZombie::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	const UStudentMemory* StudentMemory = GetStudentMemory(OwnerComp);
+	
+	if (StudentMemory == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	std::vector<ABaseZombie*> Zombies = StudentMemory->GetZombies();
+	
+	if (Zombies.empty())
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	const FVector Start = StudentMemory->GetOwner()->GetActorLocation();
+	
+	std::ranges::sort
+	(
+		Zombies,
+		[&](const ABaseZombie* A, const ABaseZombie* B)
+		{
+			const auto ToA = FVector::DistSquared(Start, A->GetActorLocation());
+			const auto ToB = FVector::DistSquared(Start, B->GetActorLocation());
+			
+			return ToA < ToB;
+		}
+	);
+	
+	UBlackboardComponent* BlackBoard = OwnerComp.GetBlackboardComponent();
+	
+	if (BlackBoard == nullptr)
+	{
+		return EBTNodeResult::Failed;
+	}
+	
+	BlackBoard->SetValueAsObject
+	(
+		Target.SelectedKeyName,
+		Zombies.front()
+	);
+	
+	return EBTNodeResult::Succeeded;
+}
