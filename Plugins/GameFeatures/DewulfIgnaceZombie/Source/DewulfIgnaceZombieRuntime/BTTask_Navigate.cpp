@@ -154,7 +154,9 @@ void UBTTask_Navigate::CalculateSteering(UBehaviorTreeComponent& OwnerComp, floa
 	float TotalZombieWeight = 0.f;
 	FVector FleeZombies = FVector::ZeroVector;
 	
-	for (const auto& Zombie: StudentMemory->GetZombies())
+	auto Zombies = StudentMemory->GetZombies();
+	
+	for (const auto& Zombie: Zombies)
 	{
 		FVector ZombieLocation = Zombie->GetActorLocation();
 		ZombieLocation.Z = 0.f;
@@ -173,6 +175,8 @@ void UBTTask_Navigate::CalculateSteering(UBehaviorTreeComponent& OwnerComp, floa
 	{
 		FleeZombies /= TotalZombieWeight;
 	}
+	
+	FleeZombies *= Zombies.size();
 	
 	// flee purge zones
 	float TotalZoneWeight = 0.f;
