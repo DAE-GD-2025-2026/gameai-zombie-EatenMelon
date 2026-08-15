@@ -32,7 +32,7 @@ EBTNodeResult::Type UBTTask_GetHealthPercentage::ExecuteTask(UBehaviorTreeCompon
 		return EBTNodeResult::Failed;
 	}
 	
-	const float Percent = HealthComp->GetHealth() / HealthComp->GetMaxHealth();
+	const float Percent = static_cast<float>(HealthComp->GetHealth()) / HealthComp->GetMaxHealth();
 	
 	UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent();
 	
